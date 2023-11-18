@@ -12,6 +12,7 @@ class Workout {
   //Color hiding for the circle
   date = new Date();
   id = (Date.now() + '').slice(-10);
+  clicks = 0;
   constructor(coords, distance, duration) {
     //this.date = ...
     //this.id = ...
@@ -26,6 +27,10 @@ class Workout {
     this.description = `${this.type[0].toUpperCase()}${this.type.slice(1)} on ${
       months[this.date.getMonth()]
     } ${this.date.getDate()}`;
+  }
+  click() {
+    this.clicks++;
+    console.log(this.clicks);
   }
 }
 
@@ -62,12 +67,14 @@ class Cycling extends Workout {
 class App {
   #map;
   #mapEvent;
+  #mapZoom = 14;
   #workouts = [];
 
   constructor() {
     this._getPosition();
     form.addEventListener('submit', this._newWorkout.bind(this));
     inputType.addEventListener(`change`, this._toggleElevationField);
+    containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
   }
 
   _getPosition() {
@@ -81,10 +88,9 @@ class App {
   _loadMap(position) {
     let { latitude } = position.coords;
     let { longitude } = position.coords;
-    console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
 
     const coords = [latitude, longitude];
-    this.#map = L.map('map').setView(coords, 15);
+    this.#map = L.map('map').setView(coords, this.#mapZoom);
     L.tileLayer('https://tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -97,16 +103,26 @@ class App {
     form.classList.remove('hidden');
     inputDistance.focus();
   }
+  _hiddenForm() {
+    inputDistance.value =
+      inputDuration.value =
+      inputElevation.value =
+      inputCadence.value =
+        '';
+
+    form.style.display = 'none';
+    form.classList.add('hidden');
+    setTimeout(() => (form.style.display = 'grid'), 1000);
+  }
   _toggleElevationField() {
     inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
     inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
   }
 
   _newWorkout(e) {
-    e.preventDefault();
-
     const validInput = (...inputs) =>
       inputs.every(inp => Number.isFinite(inp) && +inp > 0);
+    e.preventDefault();
 
     //Get data from form
     const type = inputType.value;
@@ -133,6 +149,7 @@ class App {
       workout = new Cycling([lat, lng], distance, duration, elev);
       circleColor = 1;
     }
+
     //Yeni objeyi workout array'e ekle
     this.#workouts.push(workout);
     console.log(workout);
@@ -141,11 +158,7 @@ class App {
     this._renderWorkoutMarker(workout);
     this._renderWorkout(workout);
     //formu gizleyip input alanını temizle
-    inputDistance.value =
-      inputDuration.value =
-      inputElevation.value =
-      inputCadence.value =
-        '';
+    this._hiddenForm();
     this.renderWorkoutCircle(circleColor, workout);
   }
 
@@ -161,7 +174,9 @@ class App {
           className: `${workout.type}-popup`,
         })
       )
-      .setPopupContent(`Workout`)
+      .setPopupContent(
+        `${workout.type === 'running' ? '🏃' : '🚴‍♀️'} ${workout.description}`
+      )
       .openPopup();
   }
 
@@ -172,7 +187,7 @@ class App {
    <h2 class="workout__title">${workout.description}</h2>
    <div class="workout__details">
      <span class="workout__icon">${
-       workout.name === 'running' ? '🏃' : '🚴‍♀️'
+       workout.type === 'running' ? '🏃' : '🚴‍♀️'
      }</span>
      <span class="workout__value">${workout.distance}</span>
      <span class="workout__unit">km</span>
@@ -220,6 +235,21 @@ class App {
       fillOpacity: 0.5,
       radius: 25,
     }).addTo(this.#map);
+  }
+  _moveToPopup(e) {
+    const workoutEl = e.target.closest('.workout');
+
+    if (!workoutEl) return;
+
+    const workout = this.#workouts.find(
+      workout => workout.id === workoutEl.dataset.id
+    );
+    console.log(workout);
+    this.#map.flyTo(workout.coords, this.#mapZoom + 2, {
+      duration: 1,
+    });
+
+    workout.click();
   }
 }
 const app = new App();
