@@ -30,7 +30,6 @@ class Workout {
   }
   click() {
     this.clicks++;
-    console.log(this.clicks);
   }
 }
 
@@ -162,7 +161,6 @@ class App {
 
     //Yeni objeyi workout array'e ekle
     this.#workouts.push(workout);
-    console.log(workout);
     //workout listesini ve isaretciyi güncelle
     //Marker
     this._renderWorkoutMarker(workout);
@@ -257,7 +255,6 @@ class App {
     const workout = this.#workouts.find(
       workout => workout.id === workoutEl.dataset.id
     );
-    console.log(workout);
     this.#map.flyTo(workout.coords, this.#mapZoom + 2, {
       duration: 1,
     });
@@ -276,11 +273,20 @@ class App {
     //In-depth copy is created with JSON.stringify
 
     this.#workouts = data;
-    console.log(this.#workouts);
+  }
+
+  reset() {
+    localStorage.removeItem('workouts');
+    location.reload();
   }
 }
 const app = new App();
 
+function exClick() {
+  JSON.stringify();
+}
+
+//Recursive
 /*_deepCopy(workout) {
     if (workout === null || typeof workout !== 'object') return workout;
 
