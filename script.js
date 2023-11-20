@@ -36,6 +36,7 @@ class Workout {
 
 class Running extends Workout {
   type = 'running';
+  circleColor = 2;
   constructor(coords, distance, duration, cadence) {
     super(coords, distance, duration);
     this.cadence = cadence;
@@ -51,6 +52,7 @@ class Running extends Workout {
 
 class Cycling extends Workout {
   type = 'cycling';
+  circleColor = 1;
   constructor(coords, distance, duration, elev) {
     super(coords, distance, duration);
     this.elev = elev;
@@ -71,7 +73,13 @@ class App {
   #workouts = [];
 
   constructor() {
+    //Get user's position
     this._getPosition();
+
+    //Get data from local storage
+    this._getLocalStorage();
+
+    //Attach event handlers
     form.addEventListener('submit', this._newWorkout.bind(this));
     inputType.addEventListener(`change`, this._toggleElevationField);
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
@@ -85,6 +93,7 @@ class App {
       }
     );
   }
+
   _loadMap(position) {
     let { latitude } = position.coords;
     let { longitude } = position.coords;
@@ -95,7 +104,11 @@ class App {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(this.#map);
-
+    this.#workouts.forEach(work => {
+      this._renderWorkout(work);
+      this._renderWorkoutMarker(work);
+      this._renderWorkoutCircle(work);
+    });
     this.#map.on('click', this._showForm.bind(this));
   }
   _showForm(mapEventE) {
@@ -122,7 +135,7 @@ class App {
   _newWorkout(e) {
     const validInput = (...inputs) =>
       inputs.every(inp => Number.isFinite(inp) && +inp > 0);
-    e.preventDefault();
+    e?.preventDefault();
 
     //Get data from form
     const type = inputType.value;
@@ -130,7 +143,6 @@ class App {
     const duration = +inputDuration.value;
     const { lat, lng } = this.#mapEvent.latlng;
     let workout;
-    let circleColor = 1;
     //Which choose if selected(running, cycling)
     //Check for valid data
     if (type === 'running') {
@@ -139,7 +151,6 @@ class App {
         return alert('Wrong input please check it');
 
       workout = new Running([lat, lng], distance, duration, cadence);
-      circleColor = 2;
     }
     if (type === 'cycling') {
       const elev = +inputElevation.value;
@@ -147,7 +158,6 @@ class App {
         return alert('Wrong input please check it');
 
       workout = new Cycling([lat, lng], distance, duration, elev);
-      circleColor = 1;
     }
 
     //Yeni objeyi workout array'e ekle
@@ -159,7 +169,10 @@ class App {
     this._renderWorkout(workout);
     //formu gizleyip input alanını temizle
     this._hiddenForm();
-    this.renderWorkoutCircle(circleColor, workout);
+    this._renderWorkoutCircle(workout);
+
+    //Set local storage to all workouts
+    this._setLocalStorage();
   }
 
   _renderWorkoutMarker(workout) {
@@ -227,11 +240,11 @@ class App {
 
     form.insertAdjacentHTML('afterend', html);
   }
-  renderWorkoutCircle(colorNmbr, workout) {
+  _renderWorkoutCircle(workout) {
     L.circle(workout.coords, {
       //Page refresh issue
-      color: `var(--color-brand--${colorNmbr})`,
-      fillColor: `var(--color-brand--${colorNmbr})`,
+      color: `var(--color-brand--${workout.circleColor})`,
+      fillColor: `var(--color-brand--${workout.circleColor})`,
       fillOpacity: 0.5,
       radius: 25,
     }).addTo(this.#map);
@@ -249,7 +262,34 @@ class App {
       duration: 1,
     });
 
-    workout.click();
+    //workout.click();
+  }
+
+  _setLocalStorage() {
+    localStorage.setItem('workouts', JSON.stringify(this.#workouts));
+  }
+  //////
+
+  _getLocalStorage() {
+    const data = JSON.parse(localStorage.getItem('workouts'));
+    if (!data) return;
+    //In-depth copy is created with JSON.stringify
+
+    this.#workouts = data;
+    console.log(this.#workouts);
   }
 }
 const app = new App();
+
+/*_deepCopy(workout) {
+    if (workout === null || typeof workout !== 'object') return workout;
+
+    const copy = Array.isArray(workout) ? [] : {};
+
+    for (var key in workout) {
+      if (workout.hasOwnProperty(key)) {
+        copy[key] = this._deepCopy(workout[key]);
+      }
+    }
+    return copy;
+  }*/
