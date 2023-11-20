@@ -259,7 +259,7 @@ class App {
       duration: 1,
     });
 
-    //workout.click();
+    workout.click();
   }
 
   _setLocalStorage() {
@@ -270,9 +270,17 @@ class App {
   _getLocalStorage() {
     const data = JSON.parse(localStorage.getItem('workouts'));
     if (!data) return;
+    console.log(data);
     //In-depth copy is created with JSON.stringify
-
-    this.#workouts = data;
+    let prototypedData = data.map(work => {
+      const workout = Object.create(
+        work.type === 'running' ? Running.prototype : Cycling.prototype
+      );
+      Object.assign(workout, work);
+      return workout;
+    });
+    console.log(prototypedData);
+    this.#workouts = prototypedData;
   }
 
   reset() {
