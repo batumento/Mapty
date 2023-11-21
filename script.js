@@ -317,8 +317,36 @@ class App {
   _moveToPopup(e) {
     const workoutEl = e.target.closest('.workout');
     if (!workoutEl) return;
+    //HTML'i güncellemelisin bir yolunu bulup forma girilen değeri html'de değiştirmen gerek.
+    console.log(workoutEl);
 
     const workout = this._findWorkout(workoutEl);
+    workoutEl.innerHTML = `<li class="workout workout--${
+      workout.type
+    } " data-id="${workout.id}">
+   <h2 class="workout__title">${workout.description}</h2>
+   <div class="workout__details">
+     <span class="workout__icon">${
+       workout.type === 'running' ? '🏃' : '🚴‍♀️'
+     }</span>
+     <span class="workout__value">9999</span>
+     <span class="workout__unit">km</span>
+   </div>
+   <div class="workout__details">
+     <span class="workout__icon">⏱</span>
+     <span class="workout__value">${workout.duration}</span>
+     <span class="workout__unit">min</span>
+   </div><div class="workout__details">
+   <span class="workout__icon">⚡️</span>
+   <span class="workout__value">${workout.pace.toFixed(1)}</span>
+   <span class="workout__unit">min/km</span>
+ </div>
+ <div class="workout__details">
+   <span class="workout__icon">🦶🏼</span>
+   <span class="workout__value">${workout.cadence}</span>
+   <span class="workout__unit">spm</span>
+ </div>
+</li>`;
     this._selectWorkout(workoutEl);
     this.#map.flyTo(workout.coords, this.#mapZoom + 2, {
       duration: 1,
