@@ -321,9 +321,7 @@ class App {
     console.log(workoutEl);
 
     const workout = this._findWorkout(workoutEl);
-    workoutEl.innerHTML = `<li class="workout workout--${
-      workout.type
-    } " data-id="${workout.id}">
+    workoutEl.innerHTML = `
    <h2 class="workout__title">${workout.description}</h2>
    <div class="workout__details">
      <span class="workout__icon">${
@@ -345,8 +343,7 @@ class App {
    <span class="workout__icon">🦶🏼</span>
    <span class="workout__value">${workout.cadence}</span>
    <span class="workout__unit">spm</span>
- </div>
-</li>`;
+ </div>`;
     this._selectWorkout(workoutEl);
     this.#map.flyTo(workout.coords, this.#mapZoom + 2, {
       duration: 1,
