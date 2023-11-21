@@ -1,6 +1,8 @@
 :root {
   --color-brand--1: #ffb545;
   --color-brand--2: #00c46a;
+  --color-brand-select--1: #00c46980;
+  --color-brand-select--2: #ffb54593;
 
   --color-dark--1: #2d3439;
   --color-dark--2: #42484d;
@@ -76,6 +78,14 @@ a:visited {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 0.75rem 1.5rem;
+}
+.workout--selecting-running {
+  border-bottom: 10px solid var(--color-brand-select--1);
+  border-right: 5px solid var(--color-brand-select--1);
+}
+.workout--selecting-cycling {
+  border-bottom: 10px solid var(--color-brand-select--2);
+  border-right: 5px solid var(--color-brand-select--2);
 }
 .workout--running {
   border-left: 5px solid var(--color-brand--2);
