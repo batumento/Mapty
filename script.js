@@ -122,11 +122,13 @@ class App {
   }
   _showForm(mapEventE = undefined, ...inputValues) {
     this.#mapEvent = mapEventE;
+    this.#selectWorkout = undefined;
     if (mapEventE) this._removeSelectWorkout();
     formButton.style.display = 'none';
     inputType.closest('.form__row').classList.remove('form__row--hidden');
     form.classList.remove('hidden');
     inputDistance.focus();
+    console.log(this.#selectWorkout);
   }
   _hiddenForm() {
     inputDistance.value =
@@ -143,7 +145,9 @@ class App {
     inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
     inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
   }
-  _deleteWorkout(workout) {}
+  _deleteWorkout(workout) {
+    console.log('workedDelete');
+  }
   _newWorkout(e) {
     const validInput = (...inputs) =>
       inputs.every(inp => Number.isFinite(inp) && +inp > 0);
@@ -203,13 +207,7 @@ class App {
       )
       .openPopup();
   }
-
-  _closureWW(e) {
-    this._newWorkout(e);
-  }
-
   ///
-
   _renderWorkout(workout) {
     let html = `<li class="workout workout--${workout.type} " data-id="${
       workout.id
@@ -274,6 +272,7 @@ class App {
     e?.preventDefault();
 
     let workout = this._findWorkout(this.#selectWorkout);
+    console.log(workout);
     //Get data from form
     const distance = +inputDistance.value;
     const duration = +inputDuration.value;
@@ -296,7 +295,6 @@ class App {
       workout.duration = duration;
       workout.elev = elev;
     }
-    console.log(workout);
     let html = `
    <h2 class="workout__title">${workout.description}</h2>
    <div class="workout__details">
@@ -342,7 +340,6 @@ class App {
   //Show Edit Form
   _showEditForm(workout) {
     this.#mapEvent = undefined;
-
     inputDistance.value = +workout.distance;
     inputDuration.value = +workout.duration;
     inputType.value = workout.type;
@@ -359,7 +356,6 @@ class App {
       inputElevation.value = +workout.elev;
     }
     inputType.closest('.form__row').classList.add('form__row--hidden');
-    console.log(formButton);
     form.classList.remove('hidden');
     formButton.style.display = 'grid';
     inputDistance.focus();
@@ -369,7 +365,6 @@ class App {
     const workoutEl = e.target.closest('.workout');
     if (!workoutEl) return;
     //HTML'i güncellemelisin bir yolunu bulup forma girilen değeri html'de değiştirmen gerek.
-    console.log(workoutEl);
     const workout = this._findWorkout(workoutEl);
     this._selectWorkout(workoutEl);
     this.#map.flyTo(workout.coords, this.#mapZoom + 2, {
@@ -393,7 +388,6 @@ class App {
         '';
     const allWorkouts = containerWorkouts.querySelectorAll('.workout');
     allWorkouts.forEach(work => {
-      console.log('dd');
       work.classList.remove(`workout--selecting-running`);
       work.classList.remove(`workout--selecting-cycling`);
     });
@@ -403,6 +397,7 @@ class App {
     const workout = this._findWorkout(selectingWorkoutEl);
     this._removeSelectWorkout();
     selectingWorkoutEl.classList.add(`workout--selecting-${workout.type}`);
+    console.log(this.#selectWorkout);
   }
   _setLocalStorage() {
     localStorage.setItem('workouts', JSON.stringify(this.#workouts));
