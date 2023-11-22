@@ -7,6 +7,7 @@ const inputDistance = document.querySelector('.form__input--distance');
 const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
+const formButton = document.querySelector('.form__btn');
 
 class Workout {
   //Color hiding for the circle
@@ -84,6 +85,7 @@ class App {
 
     //Attach event handlers
     form.addEventListener('submit', this._whichExample.bind(this));
+    formButton.addEventListener('click', this._deleteWorkout.bind(this));
     inputType.addEventListener(`change`, this._toggleElevationField);
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
   }
@@ -121,6 +123,7 @@ class App {
   _showForm(mapEventE = undefined, ...inputValues) {
     this.#mapEvent = mapEventE;
     if (mapEventE) this._removeSelectWorkout();
+    formButton.style.display = 'none';
     inputType.closest('.form__row').classList.remove('form__row--hidden');
     form.classList.remove('hidden');
     inputDistance.focus();
@@ -140,8 +143,7 @@ class App {
     inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
     inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
   }
-  _which;
-
+  _deleteWorkout(workout) {}
   _newWorkout(e) {
     const validInput = (...inputs) =>
       inputs.every(inp => Number.isFinite(inp) && +inp > 0);
@@ -264,19 +266,18 @@ class App {
       radius: 25,
     }).addTo(this.#map);
   }
+
   //Edit Workout
   _editWorkout(e) {
     const validInput = (...inputs) =>
       inputs.every(inp => Number.isFinite(inp) && +inp > 0);
     e?.preventDefault();
+
     let workout = this._findWorkout(this.#selectWorkout);
     //Get data from form
     const distance = +inputDistance.value;
     const duration = +inputDuration.value;
-    console.log(workout);
     const type = workout.type;
-    //Which choose if selected(running, cycling)
-    //Check for valid data
     if (type === 'running') {
       const cadence = +inputCadence.value;
       if (!validInput(distance, duration, cadence)) {
@@ -336,12 +337,12 @@ class App {
       <span class="workout__unit">m</span>
     </div>`;
     this.#selectWorkout.innerHTML = html;
-
     this._setLocalStorage();
   }
   //Show Edit Form
   _showEditForm(workout) {
     this.#mapEvent = undefined;
+
     inputDistance.value = +workout.distance;
     inputDuration.value = +workout.duration;
     inputType.value = workout.type;
@@ -358,7 +359,9 @@ class App {
       inputElevation.value = +workout.elev;
     }
     inputType.closest('.form__row').classList.add('form__row--hidden');
+    console.log(formButton);
     form.classList.remove('hidden');
+    formButton.style.display = 'grid';
     inputDistance.focus();
   }
   //Click Workout lists
