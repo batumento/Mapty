@@ -30,7 +30,6 @@ class Workout {
   }
   click() {
     this.clicks++;
-    console.log(this.clicks);
   }
 }
 
@@ -72,7 +71,7 @@ class App {
   #mapEvent;
   #mapZoom = 14;
   #workouts = [];
-  #edit = false;
+  #selectWorkout;
   constructor() {
     //Get user's position
     this._getPosition();
@@ -122,6 +121,7 @@ class App {
   _showForm(mapEventE = undefined, ...inputValues) {
     this.#mapEvent = mapEventE;
     if (mapEventE) this._removeSelectWorkout();
+    inputType.closest('.form__row').classList.remove('form__row--hidden');
     form.classList.remove('hidden');
     inputDistance.focus();
   }
@@ -269,12 +269,12 @@ class App {
     const validInput = (...inputs) =>
       inputs.every(inp => Number.isFinite(inp) && +inp > 0);
     e?.preventDefault();
-
+    let workout = this._findWorkout(this.#selectWorkout);
     //Get data from form
-    const type = inputType.value;
     const distance = +inputDistance.value;
     const duration = +inputDuration.value;
-    let workout;
+    console.log(workout);
+    const type = workout.type;
     //Which choose if selected(running, cycling)
     //Check for valid data
     if (type === 'running') {
@@ -282,15 +282,62 @@ class App {
       if (!validInput(distance, duration, cadence)) {
         return alert('Wrong input please check it');
       }
-      workout = { distance, duration, type, cadence };
+      workout.distance = distance;
+      workout.duration = duration;
+      workout.cadence = cadence;
     }
     if (type === 'cycling') {
       const elev = +inputElevation.value;
       if (!validInput(distance, duration, elev)) {
         return alert('Wrong input please check it');
       }
-      workout = { distance, duration, elev };
+      workout.distance = distance;
+      workout.duration = duration;
+      workout.elev = elev;
     }
+    console.log(workout);
+    let html = `
+   <h2 class="workout__title">${workout.description}</h2>
+   <div class="workout__details">
+     <span class="workout__icon">${
+       workout.type === 'running' ? '🏃' : '🚴‍♀️'
+     }</span>
+     <span class="workout__value">${workout.distance}</span>
+     <span class="workout__unit">km</span>
+   </div>
+   <div class="workout__details">
+     <span class="workout__icon">⏱</span>
+     <span class="workout__value">${workout.duration}</span>
+     <span class="workout__unit">min</span>
+   </div>`;
+
+    if (workout.type === 'running')
+      html += `
+    <div class="workout__details">
+      <span class="workout__icon">⚡️</span>
+      <span class="workout__value">${workout.calcPace().toFixed(1)}</span>
+      <span class="workout__unit">min/km</span>
+    </div>
+    <div class="workout__details">
+      <span class="workout__icon">🦶🏼</span>
+      <span class="workout__value">${workout.cadence}</span>
+      <span class="workout__unit">spm</span>
+    </div>`;
+    if (workout.type === 'cycling')
+      html += `
+    <div class="workout__details">
+      <span class="workout__icon">⚡️</span>
+      <span class="workout__value">${workout.calcSpeed().toFixed(1)}</span>
+      <span class="workout__unit">km/h</span>
+    </div>
+    <div class="workout__details">
+      <span class="workout__icon">⛰</span>
+      <span class="workout__value">${workout.elev}</span>
+      <span class="workout__unit">m</span>
+    </div>`;
+    this.#selectWorkout.innerHTML = html;
+
+    this._setLocalStorage();
   }
   //Show Edit Form
   _showEditForm(workout) {
@@ -310,6 +357,7 @@ class App {
       inputCadence.closest('.form__row').classList.add('form__row--hidden');
       inputElevation.value = +workout.elev;
     }
+    inputType.closest('.form__row').classList.add('form__row--hidden');
     form.classList.remove('hidden');
     inputDistance.focus();
   }
@@ -319,31 +367,7 @@ class App {
     if (!workoutEl) return;
     //HTML'i güncellemelisin bir yolunu bulup forma girilen değeri html'de değiştirmen gerek.
     console.log(workoutEl);
-
     const workout = this._findWorkout(workoutEl);
-    workoutEl.innerHTML = `
-   <h2 class="workout__title">${workout.description}</h2>
-   <div class="workout__details">
-     <span class="workout__icon">${
-       workout.type === 'running' ? '🏃' : '🚴‍♀️'
-     }</span>
-     <span class="workout__value">9999</span>
-     <span class="workout__unit">km</span>
-   </div>
-   <div class="workout__details">
-     <span class="workout__icon">⏱</span>
-     <span class="workout__value">${workout.duration}</span>
-     <span class="workout__unit">min</span>
-   </div><div class="workout__details">
-   <span class="workout__icon">⚡️</span>
-   <span class="workout__value">${workout.pace.toFixed(1)}</span>
-   <span class="workout__unit">min/km</span>
- </div>
- <div class="workout__details">
-   <span class="workout__icon">🦶🏼</span>
-   <span class="workout__value">${workout.cadence}</span>
-   <span class="workout__unit">spm</span>
- </div>`;
     this._selectWorkout(workoutEl);
     this.#map.flyTo(workout.coords, this.#mapZoom + 2, {
       duration: 1,
@@ -372,6 +396,7 @@ class App {
     });
   }
   _selectWorkout(selectingWorkoutEl) {
+    this.#selectWorkout = selectingWorkoutEl;
     const workout = this._findWorkout(selectingWorkoutEl);
     this._removeSelectWorkout();
     selectingWorkoutEl.classList.add(`workout--selecting-${workout.type}`);
@@ -383,8 +408,6 @@ class App {
   _getLocalStorage() {
     const data = JSON.parse(localStorage.getItem('workouts'));
     if (!data) return;
-    console.log(data);
-
     //Prototyping
     const prototypedData = data.map(work => {
       const workout = Object.create(
@@ -393,8 +416,8 @@ class App {
       Object.assign(workout, work);
       return workout;
     });
-    console.log(prototypedData);
     this.#workouts = prototypedData;
+    console.log(this.#workouts);
   }
 
   reset() {
