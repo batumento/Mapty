@@ -154,11 +154,9 @@ class App {
 
     const aWorkoutList = Array.from(hWorkoutList);
     console.log(aWorkoutList);
-    console.log(
-      aWorkoutList.find(
-        workout => workout.dataset.id === this.#selectWorkout.dataset.id
-      )
-    );
+    aWorkoutList
+      .find(workout => workout.dataset.id === this.#selectWorkout.dataset.id)
+      .remove();
   }
   _newWorkout(e) {
     const validInput = (...inputs) =>
