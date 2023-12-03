@@ -150,13 +150,14 @@ class App {
     );
     const hWorkoutList =
       this.#selectWorkout.parentNode.getElementsByTagName('li');
-    this.#workouts.splice(selectIndex, 1);
-
     const aWorkoutList = Array.from(hWorkoutList);
-    console.log(aWorkoutList);
     aWorkoutList
       .find(workout => workout.dataset.id === this.#selectWorkout.dataset.id)
       .remove();
+    this.#workouts.splice(selectIndex, 1);
+    console.log(this.#workouts);
+    console.log(aWorkoutList);
+    this._setLocalStorage();
   }
   _newWorkout(e) {
     const validInput = (...inputs) =>
