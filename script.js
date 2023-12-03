@@ -148,9 +148,17 @@ class App {
     const selectIndex = this.#workouts.findIndex(
       workout => workout.id === this.#selectWorkout.dataset.id
     );
+    const hWorkoutList =
+      this.#selectWorkout.parentNode.getElementsByTagName('li');
     this.#workouts.splice(selectIndex, 1);
 
-    console.log(this.#selectWorkout.parentNode);
+    const aWorkoutList = Array.from(hWorkoutList);
+    console.log(aWorkoutList);
+    console.log(
+      aWorkoutList.find(
+        workout => workout.dataset.id === this.#selectWorkout.dataset.id
+      )
+    );
   }
   _newWorkout(e) {
     const validInput = (...inputs) =>
