@@ -143,8 +143,14 @@ class App {
     inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
     inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
   }
-  _deleteWorkout() {
-    console.log('ddds');
+  _deleteWorkout(e) {
+    //Delete data from Workouts
+    const selectIndex = this.#workouts.findIndex(
+      workout => workout.id === this.#selectWorkout.dataset.id
+    );
+    this.#workouts.splice(selectIndex, 1);
+
+    console.log(this.#selectWorkout.parentNode);
   }
   _newWorkout(e) {
     const validInput = (...inputs) =>
@@ -415,7 +421,6 @@ class App {
       return workout;
     });
     this.#workouts = prototypedData;
-    console.log(this.#workouts);
   }
 
   reset() {
